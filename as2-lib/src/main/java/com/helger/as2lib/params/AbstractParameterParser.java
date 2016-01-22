@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -90,9 +90,7 @@ public abstract class AbstractParameterParser
    * @throws OpenAS2Exception
    *         In case the string is incorrect
    */
-  public void setParameters (@Nullable final String sFormat,
-                             @Nullable final String sDelimiters,
-                             @Nonnull final String sValue) throws OpenAS2Exception
+  public void setParameters (@Nullable final String sFormat, @Nullable final String sDelimiters, @Nonnull final String sValue) throws OpenAS2Exception
   {
     final List <String> aKeys = StringHelper.getExploded (',', sFormat);
 
@@ -147,7 +145,7 @@ public abstract class AbstractParameterParser
 
       // If we have just $$ then output $, else we have $xxx$, lookup xxx
       if (nNext == nPrev)
-        aSB.append ("$");
+        aSB.append ('$');
       else
         aSB.append (getParameter (sFormat.substring (nPrev, nNext)));
     }

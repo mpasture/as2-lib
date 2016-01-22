@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -64,16 +64,28 @@ import com.helger.as2lib.util.AS2Helper;
 import com.helger.as2lib.util.IStringMap;
 import com.helger.commons.ValueEnforcer;
 import com.helger.commons.annotation.Nonempty;
+import com.helger.commons.annotation.OverrideOnDemand;
 import com.helger.commons.annotation.ReturnsMutableCopy;
 import com.helger.commons.collection.CollectionHelper;
 import com.helger.commons.io.EAppend;
 import com.helger.commons.io.file.FileHelper;
 import com.helger.commons.io.stream.StreamHelper;
 
-public class PKCS12CertificateFactory extends AbstractCertificateFactory implements IAliasedCertificateFactory, IKeyStoreCertificateFactory, IStorableCertificateFactory
+/**
+ * An implementation of a file-based certificate factory using BouncyCastle
+ * PKCS12 format.
+ *
+ * @author Philip Helger
+ */
+public class PKCS12CertificateFactory extends AbstractCertificateFactory implements
+                                      IAliasedCertificateFactory,
+                                      IKeyStoreCertificateFactory,
+                                      IStorableCertificateFactory
 {
   public static final String ATTR_FILENAME = "filename";
   public static final String ATTR_PASSWORD = "password";
+  public static final String ATTR_SAVE_CHANGES_TO_FILE = "autosave";
+
   private static final Logger s_aLogger = LoggerFactory.getLogger (PKCS12CertificateFactory.class);
 
   private KeyStore m_aKeyStore;
@@ -201,6 +213,32 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
     return getAttributeAsStringRequired (ATTR_PASSWORD).toCharArray ();
   }
 
+  public void setSaveChangesToFile (final boolean bSaveChangesToFile)
+  {
+    setAttribute (ATTR_SAVE_CHANGES_TO_FILE, bSaveChangesToFile);
+  }
+
+  public boolean isSaveChangesToFile ()
+  {
+    return getAttributeAsBoolean (ATTR_SAVE_CHANGES_TO_FILE, DEFAULT_SAVE_CHANGES_TO_FILE);
+  }
+
+  /**
+   * Custom callback method that is invoked if something changes in the
+   * keystore. By default the changes are written back to disk.
+   *
+   * @throws OpenAS2Exception
+   *         In case saving fails.
+   * @see #isSaveChangesToFile()
+   * @see #setSaveChangesToFile(boolean)
+   */
+  @OverrideOnDemand
+  protected void onChange () throws OpenAS2Exception
+  {
+    if (isSaveChangesToFile ())
+      save ();
+  }
+
   @Nonnull
   public PrivateKey getPrivateKey (@Nullable final X509Certificate aCert) throws OpenAS2Exception
   {
@@ -256,7 +294,7 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
         throw new CertificateExistsException (sAlias);
 
       aKeyStore.setCertificateEntry (sAlias, aCert);
-      save (getFilename (), getPassword ());
+      onChange ();
       s_aLogger.info ("Added certificate alias '" + sAlias + "' of certificate '" + aCert.getSubjectDN ());
     }
     catch (final GeneralSecurityException ex)
@@ -281,7 +319,8 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
 
       final Certificate [] aCertChain = aKeyStore.getCertificateChain (sAlias);
       aKeyStore.setKeyEntry (sAlias, aKey, sPassword.toCharArray (), aCertChain);
-      save (getFilename (), getPassword ());
+      onChange ();
+      s_aLogger.info ("Added key alias '" + sAlias + "'");
     }
     catch (final GeneralSecurityException ex)
     {
@@ -297,7 +336,8 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
       // Make a copy to be sure
       for (final String sAlias : CollectionHelper.newList (aKeyStore.aliases ()))
         aKeyStore.deleteEntry (sAlias);
-      save (getFilename (), getPassword ());
+      onChange ();
+      s_aLogger.info ("Remove all aliases in key store");
     }
     catch (final GeneralSecurityException ex)
     {
@@ -363,11 +403,13 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
     final KeyStore aKeyStore = getKeyStore ();
     try
     {
-      if (aKeyStore.getCertificate (sAlias) == null)
+      final Certificate aCert = aKeyStore.getCertificate (sAlias);
+      if (aCert == null)
         throw new CertificateNotFoundException (null, sAlias);
 
       aKeyStore.deleteEntry (sAlias);
-      save (getFilename (), getPassword ());
+      onChange ();
+      s_aLogger.info ("Removed certificate alias '" + sAlias + "'");
     }
     catch (final GeneralSecurityException ex)
     {
@@ -380,13 +422,14 @@ public class PKCS12CertificateFactory extends AbstractCertificateFactory impleme
     save (getFilename (), getPassword ());
   }
 
-  public void save (final String sFilename, final char [] aPassword) throws OpenAS2Exception
+  public void save (@Nonnull final String sFilename, @Nonnull final char [] aPassword) throws OpenAS2Exception
   {
     final OutputStream fOut = FileHelper.getOutputStream (sFilename, EAppend.TRUNCATE);
     save (fOut, aPassword);
   }
 
-  public void save (@WillClose final OutputStream aOS, final char [] aPassword) throws OpenAS2Exception
+  public void save (@Nonnull @WillClose final OutputStream aOS,
+                    @Nonnull final char [] aPassword) throws OpenAS2Exception
   {
     try
     {

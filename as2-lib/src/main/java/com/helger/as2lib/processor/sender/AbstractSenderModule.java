@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -47,6 +47,7 @@ import com.helger.as2lib.message.IMessage;
 import com.helger.as2lib.partner.Partnership;
 import com.helger.as2lib.processor.module.AbstractProcessorModule;
 import com.helger.as2lib.processor.resender.IProcessorResenderModule;
+import com.helger.commons.string.StringParser;
 
 public abstract class AbstractSenderModule extends AbstractProcessorModule implements IProcessorSenderModule
 {
@@ -55,46 +56,64 @@ public abstract class AbstractSenderModule extends AbstractProcessorModule imple
   /**
    * How many times should this message be sent?
    *
-   * @param aPartnership
-   *        The partnership to retrieve the value from. If a retry count is
-   *        available in the partnership it takes precedence over the ones
-   *        defined in the options or attributes. May be <code>null</code>.
+   * @param aPartnerhsip
+   *        Partnership to be used. May be <code>null</code>
    * @param aOptions
    *        Options to choose from. May be <code>null</code>.
    * @return 0 to indicate no retry.
    */
   @Nonnegative
-  protected final int getRetryCount (@Nullable final Partnership aPartnership,
+  protected final int getRetryCount (@Nullable final Partnership aPartnerhsip,
                                      @Nullable final Map <String, Object> aOptions)
   {
-    String sTriesLeft = null;
+    int nRetries = -1;
 
-    if (aPartnership != null)
+    if (aPartnerhsip != null)
     {
-      // Get from partnership
-      sTriesLeft = aPartnership.getAttribute (IProcessorResenderModule.OPTION_RETRIES);
+      // Provided in the partnership?
+      final String sTriesLeft = aPartnerhsip.getAttribute (IProcessorResenderModule.OPTION_RETRIES);
+      final int nRetriesPS = StringParser.parseInt (sTriesLeft, -1);
+      if (nRetriesPS >= 0)
+        nRetries = nRetriesPS;
     }
 
-    if (sTriesLeft == null && aOptions != null)
+    if (aOptions != null)
     {
       // Provided in the options?
-      sTriesLeft = (String) aOptions.get (IProcessorResenderModule.OPTION_RETRIES);
+      final String sTriesLeft = (String) aOptions.get (IProcessorResenderModule.OPTION_RETRIES);
+      final int nRetriesOptions = StringParser.parseInt (sTriesLeft, -1);
+      if (nRetriesOptions >= 0)
+        if (nRetries < 0)
+          nRetries = nRetriesOptions;
+        else
+        {
+          // Use the minimum
+          nRetries = Math.min (nRetries, nRetriesOptions);
+        }
     }
 
-    if (sTriesLeft == null)
     {
-      // No. Provided as an attribute?
-      sTriesLeft = getAttributeAsString (IProcessorResenderModule.OPTION_RETRIES);
+      // Provided as an attribute?
+      final String sTriesLeft = getAttributeAsString (IProcessorResenderModule.OPTION_RETRIES);
+      final int nRetriesAttr = StringParser.parseInt (sTriesLeft, -1);
+      if (nRetriesAttr >= 0)
+        if (nRetries < 0)
+          nRetries = nRetriesAttr;
+        else
+        {
+          // Use the minimum
+          nRetries = Math.min (nRetries, nRetriesAttr);
+        }
     }
 
-    if (sTriesLeft == null)
+    if (nRetries < 0)
     {
       // Not provided. Use default.
       return IProcessorResenderModule.DEFAULT_RETRIES;
     }
 
-    // Avoid returning negative values
-    return Math.max (Integer.parseInt (sTriesLeft), 0);
+    // Never returning negative values
+    return nRetries;
   }
 
   /**

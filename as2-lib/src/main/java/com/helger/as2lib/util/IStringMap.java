@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -51,10 +51,6 @@ public interface IStringMap extends ICloneable <IStringMap>, Iterable <Map.Entry
   @Nonnull
   @ReturnsMutableCopy
   Map <String, String> getAllAttributes ();
-
-  @Nullable
-  @Deprecated
-  String getAttributeObject (@Nullable String sName);
 
   @Nullable
   String getAttributeAsString (@Nullable String sName);

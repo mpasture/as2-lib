@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,6 +38,7 @@ import javax.mail.internet.ContentDisposition;
 
 import com.helger.as2lib.message.IMessage;
 import com.helger.commons.ValueEnforcer;
+import com.helger.commons.annotation.Nonempty;
 import com.helger.commons.string.StringHelper;
 
 public class MessageParameters extends AbstractParameterParser
@@ -80,6 +81,27 @@ public class MessageParameters extends AbstractParameterParser
             throw new InvalidParameterException ("Invalid area in key", this, sKey, null);
   }
 
+  @Nonnull
+  @Nonempty
+  private String _getContentDispositionFilename ()
+  {
+    String sReturnFilename = "noContentDispositionFilename";
+    final String sFilename = m_aTarget.getContentDisposition ();
+    if (StringHelper.hasText (sFilename))
+    {
+      try
+      {
+        final ContentDisposition aContentDisposition = new ContentDisposition (sFilename);
+        sReturnFilename = aContentDisposition.getParameter ("filename");
+      }
+      catch (final Exception ex)
+      {
+        throw new IllegalStateException ("Error parsing parameter", ex);
+      }
+    }
+    return sReturnFilename;
+  }
+
   @Override
   public String getParameter (@Nonnull final String sKey) throws InvalidParameterException
   {
@@ -92,30 +114,19 @@ public class MessageParameters extends AbstractParameterParser
 
     if (sArea.equals (KEY_SENDER))
       return m_aTarget.getPartnership ().getSenderID (sAreaValue);
+
     if (sArea.equals (KEY_RECEIVER))
       return m_aTarget.getPartnership ().getReceiverID (sAreaValue);
+
     if (sArea.equals (KEY_ATTRIBUTES))
       return m_aTarget.getAttribute (sAreaValue);
+
     if (sArea.equals (KEY_HEADERS))
       return m_aTarget.getHeader (sAreaValue);
+
     if (sArea.equals (KEY_CONTENT_DISPOSITION) && sAreaValue.equals ("filename"))
-    {
-      String sReturnFilename = "noContentDispositionFilename";
-      final String sFilename = m_aTarget.getContentDisposition ();
-      if (StringHelper.hasText (sFilename))
-      {
-        try
-        {
-          final ContentDisposition aContentDisposition = new ContentDisposition (sFilename);
-          sReturnFilename = aContentDisposition.getParameter ("filename");
-        }
-        catch (final Exception ex)
-        {
-          throw new IllegalStateException ("Error parsing parameter", ex);
-        }
-      }
-      return sReturnFilename;
-    }
+      return _getContentDispositionFilename ();
+
     throw new InvalidParameterException ("Invalid area in key", this, sKey, null);
   }
 }

@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -101,14 +101,6 @@ public class StringMap implements IStringMap, Serializable
   public Map <String, String> getAllAttributes ()
   {
     return CollectionHelper.newOrderedMap (m_aAttrs);
-  }
-
-  @Nullable
-  @Deprecated
-  public String getAttributeObject (@Nullable final String sName)
-  {
-    // ConcurrentHashMap cannot handle null keys
-    return sName == null ? null : m_aAttrs.get (sName);
   }
 
   @Nullable

@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -169,6 +169,17 @@ public class AS2Client
     return aMsg;
   }
 
+  /**
+   * @return The certificate factory instance to be used. May not be
+   *         <code>null</code>.
+   */
+  @Nonnull
+  @OverrideOnDemand
+  protected PKCS12CertificateFactory createCertificateFactory ()
+  {
+    return new PKCS12CertificateFactory ();
+  }
+
   @OverrideOnDemand
   protected void initCertificateFactory (@Nonnull final AS2ClientSettings aSettings,
                                          @Nonnull final AS2Session aSession) throws OpenAS2Exception
@@ -177,8 +188,9 @@ public class AS2Client
     final StringMap aParams = new StringMap ();
     aParams.setAttribute (PKCS12CertificateFactory.ATTR_FILENAME, aSettings.getKeyStoreFile ().getAbsolutePath ());
     aParams.setAttribute (PKCS12CertificateFactory.ATTR_PASSWORD, aSettings.getKeyStorePassword ());
+    aParams.setAttribute (PKCS12CertificateFactory.ATTR_SAVE_CHANGES_TO_FILE, aSettings.isSaveKeyStoreChangesToFile ());
 
-    final PKCS12CertificateFactory aCertFactory = new PKCS12CertificateFactory ();
+    final PKCS12CertificateFactory aCertFactory = createCertificateFactory ();
     aCertFactory.initDynamicComponent (aSession, aParams);
     if (aSettings.getReceiverCertificate () != null)
     {
@@ -211,6 +223,11 @@ public class AS2Client
     aSession.setMessageProcessor (aMessageProcessor);
   }
 
+  /**
+   * Create an empty response object that is too be filled.
+   *
+   * @return The empty response object and never <code>null</code>.
+   */
   @Nonnull
   @OverrideOnDemand
   protected AS2ClientResponse createResponse ()
@@ -218,6 +235,12 @@ public class AS2Client
     return new AS2ClientResponse ();
   }
 
+  /**
+   * Create the AS2 session to be used. This method must ensure an eventually
+   * needed proxy is set.
+   *
+   * @return The new AS2 session and never <code>null</code>.
+   */
   @Nonnull
   @OverrideOnDemand
   protected AS2Session createSession ()

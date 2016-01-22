@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -114,8 +114,7 @@ public final class DispositionType
       throw new DispositionException (this, null);
 
     if (m_sStatusModifier != null)
-      if (m_sStatusModifier.equalsIgnoreCase (STATUS_MODIFIER_ERROR) ||
-          m_sStatusModifier.equalsIgnoreCase (STATUS_MODIFIER_WARNING))
+      if (m_sStatusModifier.equalsIgnoreCase (STATUS_MODIFIER_ERROR) || m_sStatusModifier.equalsIgnoreCase (STATUS_MODIFIER_WARNING))
         throw new DispositionException (this, null);
   }
 
@@ -123,10 +122,10 @@ public final class DispositionType
   public String getAsString ()
   {
     final StringBuilder aSB = new StringBuilder ();
-    aSB.append (m_sAction).append ("/").append (m_sMDNAction).append ("; ").append (m_sStatus);
+    aSB.append (m_sAction).append ('/').append (m_sMDNAction).append ("; ").append (m_sStatus);
     if (m_sStatusModifier != null)
     {
-      aSB.append ("/").append (m_sStatusModifier).append (":");
+      aSB.append ('/').append (m_sStatusModifier).append (':');
       if (m_sStatusDescription != null)
         aSB.append (m_sStatusDescription);
     }
@@ -180,11 +179,7 @@ public final class DispositionType
   @Nonnull
   public static DispositionType createSuccess ()
   {
-    return new DispositionType (ACTION_AUTOMATIC_ACTION,
-                                MDNACTION_MDN_SENT_AUTOMATICALLY,
-                                STATUS_PROCESSED,
-                                null,
-                                null);
+    return new DispositionType (ACTION_AUTOMATIC_ACTION, MDNACTION_MDN_SENT_AUTOMATICALLY, STATUS_PROCESSED, null, null);
   }
 
   /**

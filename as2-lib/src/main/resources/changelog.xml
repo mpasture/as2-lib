@@ -3,7 +3,7 @@
 
     The FreeBSD Copyright
     Copyright 1994-2008 The FreeBSD Project. All rights reserved.
-    Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+    Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
@@ -34,6 +34,18 @@
 
 -->
 <changelog xmlns="http://www.helger.com/xsd/changelog/1.0" version="1.0" component="as2-lib">
+  <entry date="2015-12-19" category="tech" action="update">
+    <change>
+      <text locale="en">Updated to javax.mail 1.5.5</text>
+    </change>
+  </entry>
+  <release date="2015-12-01" version="2.2.5" />
+  <release date="2015-11-11" version="2.2.4" />
+  <entry date="2015-11-10" category="tech" action="update">
+    <change>
+      <text locale="en">Fixed a minor issue where details of a ProcessingException were not passed into the MDN text</text>
+    </change>
+  </entry>
   <release date="2015-10-22" version="2.2.3" />
   <entry date="2015-10-22" category="tech" action="update">
     <change>

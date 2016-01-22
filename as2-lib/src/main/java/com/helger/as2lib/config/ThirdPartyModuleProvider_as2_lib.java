@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -53,13 +53,13 @@ public final class ThirdPartyModuleProvider_as2_lib implements IThirdPartyModule
   public static final IThirdPartyModule BOUNCY_CASTLE = new ThirdPartyModule ("Bouncy Castle",
                                                                               "Legion of the Bouncy Castle",
                                                                               ELicense.MIT,
-                                                                              new Version (1, 53),
+                                                                              new Version (1, 54),
                                                                               "https://www.bouncycastle.org/");
 
   public static final IThirdPartyModule JAVAX_MAIL = new ThirdPartyModule ("JavaMail",
                                                                            "Oracle",
                                                                            ELicense.BSD,
-                                                                           new Version (1, 5, 4),
+                                                                           new Version (1, 5, 5),
                                                                            "http://javamail.java.net/");
 
   @Nullable

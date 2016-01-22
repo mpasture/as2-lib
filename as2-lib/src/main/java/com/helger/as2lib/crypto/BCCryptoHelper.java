@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -46,6 +46,7 @@ import java.security.PrivateKey;
 import java.security.PrivilegedAction;
 import java.security.Security;
 import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -129,7 +130,9 @@ public final class BCCryptoHelper implements ICryptoHelper
     {
       s_aDumpDecryptedDirectory = new File (sDumpDecryptedDirectory);
       IOHelper.getFileOperationManager ().createDirIfNotExisting (s_aDumpDecryptedDirectory);
-      s_aLogger.info ("Using directory " + s_aDumpDecryptedDirectory.getAbsolutePath () + " to dump all decrypted body parts to.");
+      s_aLogger.info ("Using directory " +
+                      s_aDumpDecryptedDirectory.getAbsolutePath () +
+                      " to dump all decrypted body parts to.");
     }
     else
       s_aDumpDecryptedDirectory = null;
@@ -142,12 +145,14 @@ public final class BCCryptoHelper implements ICryptoHelper
     final MailcapCommandMap aCommandMap = (MailcapCommandMap) CommandMap.getDefaultCommandMap ();
     aCommandMap.addMailcap ("application/pkcs7-signature;; x-java-content-handler=" +
                             org.bouncycastle.mail.smime.handlers.pkcs7_signature.class.getName ());
-    aCommandMap.addMailcap ("application/pkcs7-mime;; x-java-content-handler=" + org.bouncycastle.mail.smime.handlers.pkcs7_mime.class.getName ());
+    aCommandMap.addMailcap ("application/pkcs7-mime;; x-java-content-handler=" +
+                            org.bouncycastle.mail.smime.handlers.pkcs7_mime.class.getName ());
     aCommandMap.addMailcap ("application/x-pkcs7-signature;; x-java-content-handler=" +
                             org.bouncycastle.mail.smime.handlers.x_pkcs7_signature.class.getName ());
     aCommandMap.addMailcap ("application/x-pkcs7-mime;; x-java-content-handler=" +
                             org.bouncycastle.mail.smime.handlers.x_pkcs7_mime.class.getName ());
-    aCommandMap.addMailcap ("multipart/signed;; x-java-content-handler=" + org.bouncycastle.mail.smime.handlers.multipart_signed.class.getName ());
+    aCommandMap.addMailcap ("multipart/signed;; x-java-content-handler=" +
+                            org.bouncycastle.mail.smime.handlers.multipart_signed.class.getName ());
     AccessControllerHelper.run (new PrivilegedAction <Object> ()
     {
       public Object run ()
@@ -246,7 +251,9 @@ public final class BCCryptoHelper implements ICryptoHelper
   @Nonnull
   public String calculateMIC (@Nonnull final MimeBodyPart aPart,
                               @Nonnull final ECryptoAlgorithmSign eDigestAlgorithm,
-                              final boolean bIncludeHeaders) throws GeneralSecurityException, MessagingException, IOException
+                              final boolean bIncludeHeaders) throws GeneralSecurityException,
+                                                             MessagingException,
+                                                             IOException
   {
     ValueEnforcer.notNull (aPart, "MimeBodyPart");
     ValueEnforcer.notNull (eDigestAlgorithm, "DigestAlgorithm");
@@ -262,7 +269,8 @@ public final class BCCryptoHelper implements ICryptoHelper
 
     final ASN1ObjectIdentifier aMICAlg = eDigestAlgorithm.getOID ();
 
-    final MessageDigest aMessageDigest = MessageDigest.getInstance (aMICAlg.getId (), BouncyCastleProvider.PROVIDER_NAME);
+    final MessageDigest aMessageDigest = MessageDigest.getInstance (aMICAlg.getId (),
+                                                                    BouncyCastleProvider.PROVIDER_NAME);
 
     if (bIncludeHeaders)
     {
@@ -305,7 +313,8 @@ public final class BCCryptoHelper implements ICryptoHelper
     int nIndex = 0;
     do
     {
-      aDestinationFile = new File (s_aDumpDecryptedDirectory, "as2-decrypted-" + Long.toString (new Date ().getTime ()) + "-" + nIndex + ".part");
+      aDestinationFile = new File (s_aDumpDecryptedDirectory,
+                                   "as2-decrypted-" + Long.toString (new Date ().getTime ()) + "-" + nIndex + ".part");
       nIndex++;
     } while (aDestinationFile.exists ());
 
@@ -330,14 +339,20 @@ public final class BCCryptoHelper implements ICryptoHelper
   public MimeBodyPart decrypt (@Nonnull final MimeBodyPart aPart,
                                @Nonnull final X509Certificate aX509Cert,
                                @Nonnull final PrivateKey aPrivateKey,
-                               final boolean bForceDecrypt) throws GeneralSecurityException, MessagingException, CMSException, SMIMEException
+                               final boolean bForceDecrypt) throws GeneralSecurityException,
+                                                            MessagingException,
+                                                            CMSException,
+                                                            SMIMEException
   {
     ValueEnforcer.notNull (aPart, "MimeBodyPart");
     ValueEnforcer.notNull (aX509Cert, "X509Cert");
     ValueEnforcer.notNull (aPrivateKey, "PrivateKey");
 
     if (s_aLogger.isDebugEnabled ())
-      s_aLogger.debug ("BCCryptoHelper.decrypt; X509 subject=" + aX509Cert.getSubjectX500Principal ().getName () + "; forceDecrypt=" + bForceDecrypt);
+      s_aLogger.debug ("BCCryptoHelper.decrypt; X509 subject=" +
+                       aX509Cert.getSubjectX500Principal ().getName () +
+                       "; forceDecrypt=" +
+                       bForceDecrypt);
 
     // Make sure the data is encrypted
     if (!bForceDecrypt && !isEncrypted (aPart))
@@ -365,21 +380,30 @@ public final class BCCryptoHelper implements ICryptoHelper
   @Nonnull
   public MimeBodyPart encrypt (@Nonnull final MimeBodyPart aPart,
                                @Nonnull final X509Certificate aX509Cert,
-                               @Nonnull final ECryptoAlgorithmCrypt eAlgorithm) throws GeneralSecurityException, SMIMEException, CMSException
+                               @Nonnull final ECryptoAlgorithmCrypt eAlgorithm) throws GeneralSecurityException,
+                                                                                SMIMEException,
+                                                                                CMSException
   {
     ValueEnforcer.notNull (aPart, "MimeBodyPart");
     ValueEnforcer.notNull (aX509Cert, "X509Cert");
     ValueEnforcer.notNull (eAlgorithm, "Algorithm");
 
     if (s_aLogger.isDebugEnabled ())
-      s_aLogger.debug ("BCCryptoHelper.encrypt; X509 subject=" + aX509Cert.getSubjectX500Principal ().getName () + "; algorithm=" + eAlgorithm);
+      s_aLogger.debug ("BCCryptoHelper.encrypt; X509 subject=" +
+                       aX509Cert.getSubjectX500Principal ().getName () +
+                       "; algorithm=" +
+                       eAlgorithm);
+
+    // Check if the certificate is expired or active.
+    aX509Cert.checkValidity ();
 
     final ASN1ObjectIdentifier aEncAlg = eAlgorithm.getOID ();
 
     final SMIMEEnvelopedGenerator aGen = new SMIMEEnvelopedGenerator ();
     aGen.addRecipientInfoGenerator (new JceKeyTransRecipientInfoGenerator (aX509Cert).setProvider (BouncyCastleProvider.PROVIDER_NAME));
 
-    final OutputEncryptor aEncryptor = new JceCMSContentEncryptorBuilder (aEncAlg).setProvider (BouncyCastleProvider.PROVIDER_NAME).build ();
+    final OutputEncryptor aEncryptor = new JceCMSContentEncryptorBuilder (aEncAlg).setProvider (BouncyCastleProvider.PROVIDER_NAME)
+                                                                                  .build ();
     final MimeBodyPart aEncData = aGen.generate (aPart, aEncryptor);
     return aEncData;
   }
@@ -406,6 +430,9 @@ public final class BCCryptoHelper implements ICryptoHelper
                        eAlgorithm +
                        "; includeCertificateInSignedContent=" +
                        bIncludeCertificateInSignedContent);
+
+    // Check if the certificate is expired or active.
+    aX509Cert.checkValidity ();
 
     // create a CertStore containing the certificates we want carried
     // in the signature
@@ -436,7 +463,9 @@ public final class BCCryptoHelper implements ICryptoHelper
     // used is taken from the key - in this RSA with PKCS1Padding
     aSGen.addSignerInfoGenerator (new JcaSimpleSignerInfoGeneratorBuilder ().setProvider (BouncyCastleProvider.PROVIDER_NAME)
                                                                             .setSignedAttributeGenerator (new AttributeTable (aSignedAttrs))
-                                                                            .build (eAlgorithm.getSignAlgorithmName (), aPrivateKey, aX509Cert));
+                                                                            .build (eAlgorithm.getSignAlgorithmName (),
+                                                                                    aPrivateKey,
+                                                                                    aX509Cert));
 
     if (bIncludeCertificateInSignedContent)
     {
@@ -450,6 +479,43 @@ public final class BCCryptoHelper implements ICryptoHelper
     aTmpBody.setContent (aSignedData);
     aTmpBody.setHeader (CAS2Header.HEADER_CONTENT_TYPE, aSignedData.getContentType ());
     return aTmpBody;
+  }
+
+  @Nonnull
+  private X509Certificate _verifyFindCertificate (@Nullable final X509Certificate aX509Cert,
+                                                  final boolean bUseCertificateInBodyPart,
+                                                  @Nonnull final SMIMESignedParser aSignedParser) throws CMSException,
+                                                                                                  CertificateException,
+                                                                                                  GeneralSecurityException
+  {
+    X509Certificate aRealX509Cert = aX509Cert;
+    if (bUseCertificateInBodyPart)
+    {
+      // get all certificates contained in the body part
+      final Collection <?> aContainedCerts = aSignedParser.getCertificates ().getMatches (null);
+      if (!aContainedCerts.isEmpty ())
+      {
+        // For PEPPOL the certificate is passed in
+        if (aContainedCerts.size () > 1)
+          s_aLogger.warn ("Signed part contains " + aContainedCerts.size () + " certificates - using the first one!");
+
+        final X509CertificateHolder aCertHolder = ((X509CertificateHolder) CollectionHelper.getFirstElement (aContainedCerts));
+        final X509Certificate aCert = new JcaX509CertificateConverter ().setProvider (BouncyCastleProvider.PROVIDER_NAME)
+                                                                        .getCertificate (aCertHolder);
+        if (aX509Cert != null && !aX509Cert.equals (aCert))
+          s_aLogger.warn ("Certificate mismatch! Provided certificate\n" +
+                          aX509Cert +
+                          " differs from certficate contained in message\n" +
+                          aCert);
+
+        aRealX509Cert = aCert;
+      }
+    }
+    if (aRealX509Cert == null)
+      throw new GeneralSecurityException ("No certificate provided" +
+                                          (bUseCertificateInBodyPart ? " and none found in the message" : "") +
+                                          "!");
+    return aRealX509Cert;
   }
 
   @Nonnull
@@ -481,34 +547,14 @@ public final class BCCryptoHelper implements ICryptoHelper
                                                                    aMainPart,
                                                                    EContentTransferEncoding.AS2_DEFAULT.getID ());
 
-    X509Certificate aRealX509Cert = aX509Cert;
-    if (bUseCertificateInBodyPart)
-    {
-      // get all certificates contained in the body part
-      final Collection <?> aContainedCerts = aSignedParser.getCertificates ().getMatches (null);
-      if (!aContainedCerts.isEmpty ())
-      {
-        // For PEPPOL the certificate is passed in
-        if (aContainedCerts.size () > 1)
-          s_aLogger.warn ("Signed part contains " + aContainedCerts.size () + " certificates - using the first one!");
-
-        final X509CertificateHolder aCertHolder = ((X509CertificateHolder) CollectionHelper.getFirstElement (aContainedCerts));
-        final X509Certificate aCert = new JcaX509CertificateConverter ().setProvider (BouncyCastleProvider.PROVIDER_NAME)
-                                                                        .getCertificate (aCertHolder);
-        if (aX509Cert != null && !aX509Cert.equals (aCert))
-          s_aLogger.warn ("Certificate mismatch! Provided certificate\n" + aX509Cert + " differs from certficate contained in message\n" + aCert);
-
-        aRealX509Cert = aCert;
-      }
-    }
-    if (aRealX509Cert == null)
-      throw new GeneralSecurityException ("No certificate provided" + (bUseCertificateInBodyPart ? " and none found in the message" : "") + "!");
+    final X509Certificate aRealX509Cert = _verifyFindCertificate (aX509Cert, bUseCertificateInBodyPart, aSignedParser);
 
     if (s_aLogger.isDebugEnabled ())
-      if (aRealX509Cert == aX509Cert)
-        s_aLogger.debug ("Verifying signature using the provided certificate (partnership)");
-      else
-        s_aLogger.debug ("Verifying signature using the certificate contained in the MIME body part");
+      s_aLogger.debug (aRealX509Cert == aX509Cert ? "Verifying signature using the provided certificate (partnership)"
+                                                  : "Verifying signature using the certificate contained in the MIME body part");
+
+    // Check if the certificate is expired or active.
+    aRealX509Cert.checkValidity ();
 
     // Verify certificate
     final SignerInformationVerifier aSIV = new JcaSimpleSignerInfoVerifierBuilder ().setProvider (BouncyCastleProvider.PROVIDER_NAME)

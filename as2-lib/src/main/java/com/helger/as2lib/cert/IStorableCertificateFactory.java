@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -35,11 +35,20 @@ package com.helger.as2lib.cert;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.annotation.Nonnull;
+
 import com.helger.as2lib.exception.OpenAS2Exception;
 import com.helger.as2lib.params.InvalidParameterException;
 
+/**
+ * Base interface for a certificate factory that can store to a file.
+ *
+ * @author Philip Helger
+ */
 public interface IStorableCertificateFactory extends ICertificateFactory
 {
+  boolean DEFAULT_SAVE_CHANGES_TO_FILE = true;
+
   void setFilename (String sFilename);
 
   String getFilename () throws InvalidParameterException;
@@ -48,15 +57,44 @@ public interface IStorableCertificateFactory extends ICertificateFactory
 
   char [] getPassword () throws InvalidParameterException;
 
+  /**
+   * Change the behavior if all changes should trigger a saving to the original
+   * file. The default value is {@link #DEFAULT_SAVE_CHANGES_TO_FILE}.
+   *
+   * @param bSaveChangesToFile
+   *        <code>true</code> to enable auto-saving, <code>false</code> to
+   *        disable it.
+   */
+  void setSaveChangesToFile (boolean bSaveChangesToFile);
+
+  /**
+   * @return <code>true</code> if changes to the key store should be persisted
+   *         back to the original file, <code>false</code> if not. The default
+   *         value is {@link #DEFAULT_SAVE_CHANGES_TO_FILE}.
+   */
+  boolean isSaveChangesToFile ();
+
+  /**
+   * Shortcut for <code>load (getFilename (), getPassword ());</code>
+   *
+   * @throws OpenAS2Exception
+   *         In case of an internal error
+   */
   void load () throws OpenAS2Exception;
 
-  void load (String sFilename, char [] aPassword) throws OpenAS2Exception;
+  void load (@Nonnull String sFilename, @Nonnull char [] aPassword) throws OpenAS2Exception;
 
-  void load (InputStream aIS, char [] aPassword) throws OpenAS2Exception;
+  void load (@Nonnull InputStream aIS, @Nonnull char [] aPassword) throws OpenAS2Exception;
 
+  /**
+   * Shortcut for <code>save (getFilename (), getPassword ());</code>
+   *
+   * @throws OpenAS2Exception
+   *         In case of an internal error
+   */
   void save () throws OpenAS2Exception;
 
-  void save (String sFilename, char [] aPassword) throws OpenAS2Exception;
+  void save (@Nonnull String sFilename, @Nonnull char [] aPassword) throws OpenAS2Exception;
 
-  void save (OutputStream aOS, char [] aPassword) throws OpenAS2Exception;
+  void save (@Nonnull OutputStream aOS, @Nonnull char [] aPassword) throws OpenAS2Exception;
 }

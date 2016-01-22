@@ -17,10 +17,12 @@
     limitations under the License.
 
 -->
-<changelog xmlns="http://www.helger.com/xsd/changelog/1.0" version="1.0" component="as2-servlet">
-  <entry date="2015-10-22" category="tech" action="update">
-    <change>
-      <text locale="en">Initially extracted from as2-peppol-servlet</text>
-    </change>
-  </entry>
-</changelog>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>${env.SONATYPE_USERNAME}</username>
+      <password>${env.SONATYPE_PASSWORD}</password>
+    </server>
+  </servers>
+</settings>

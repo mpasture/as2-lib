@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,11 +36,16 @@ import javax.activation.CommandInfo;
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helger.as2lib.crypto.BCCryptoHelper;
 import com.helger.commons.collection.CollectionHelper;
 
 public final class MainListCommandMap
 {
+  private static final Logger s_aLogger = LoggerFactory.getLogger (MainListCommandMap.class);
+
   public static void main (final String [] args)
   {
     listCommandMap ();
@@ -57,9 +62,9 @@ public final class MainListCommandMap
     final MailcapCommandMap aCommandMap = (MailcapCommandMap) CommandMap.getDefaultCommandMap ();
     for (final String sMimeType : CollectionHelper.getSorted (aCommandMap.getMimeTypes ()))
     {
-      System.out.println (sMimeType);
+      s_aLogger.info (sMimeType);
       for (final CommandInfo aCI : aCommandMap.getAllCommands (sMimeType))
-        System.out.println ("  [" + aCI.getCommandName () + "] " + aCI.getCommandClass ());
+        s_aLogger.info ("  [" + aCI.getCommandName () + "] " + aCI.getCommandClass ());
     }
   }
 }

@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -124,16 +124,13 @@ public final class IOHelper
       if (nKBytesPerSecond < CGlobal.BYTES_PER_KILOBYTE)
       {
         // < 1048576
-        aSB.append (nKBytesPerSecond)
-           .append (".")
-           .append (nBytesPerSecond % CGlobal.BYTES_PER_KILOBYTE)
-           .append (" KBps");
+        aSB.append (nKBytesPerSecond).append ('.').append (nBytesPerSecond % CGlobal.BYTES_PER_KILOBYTE).append (" KBps");
       }
       else
       {
         // >= 1048576
         aSB.append (nKBytesPerSecond / CGlobal.BYTES_PER_KILOBYTE)
-           .append (".")
+           .append ('.')
            .append (nKBytesPerSecond % CGlobal.BYTES_PER_KILOBYTE)
            .append (" MBps");
       }
@@ -148,8 +145,7 @@ public final class IOHelper
     int nCounter = -1;
     while (true)
     {
-      final File aTest = new File (aDir,
-                                   nCounter == -1 ? sBaseFilename : sBaseFilename + "." + Integer.toString (nCounter));
+      final File aTest = new File (aDir, nCounter == -1 ? sBaseFilename : sBaseFilename + "." + Integer.toString (nCounter));
       if (!aTest.exists ())
         return aTest;
 
@@ -167,8 +163,7 @@ public final class IOHelper
    * @throws OpenAS2Exception
    *         In case moving failed
    */
-  public static void handleError (@Nonnull final File aFile,
-                                  @Nonnull final String sErrorDirectory) throws OpenAS2Exception
+  public static void handleError (@Nonnull final File aFile, @Nonnull final String sErrorDirectory) throws OpenAS2Exception
   {
     File aDestFile = null;
 
@@ -191,10 +186,7 @@ public final class IOHelper
     }
 
     // make sure an error of this event is logged
-    final InvalidMessageException ex = new InvalidMessageException ("Moved " +
-                                                                    aFile.getAbsolutePath () +
-                                                                    " to " +
-                                                                    aDestFile.getAbsolutePath ());
+    final InvalidMessageException ex = new InvalidMessageException ("Moved " + aFile.getAbsolutePath () + " to " + aDestFile.getAbsolutePath ());
     ex.terminate ();
   }
 

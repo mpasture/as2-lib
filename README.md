@@ -1,5 +1,9 @@
 #as2-lib
 
+[![Build Status](https://travis-ci.org/phax/as2-lib.svg?branch=master)](https://travis-ci.org/phax/as2-lib)
+﻿
+[![Join the chat at https://gitter.im/phax/as2-lib](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/phax/as2-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 AS2 is a transport protocol specified in [RFC 4130](http://www.ietf.org/rfc/rfc4130.txt).
 This library is a fork of [OpenAS2](http://sourceforge.net/projects/openas2/) which did not 
 release updates since 2010 (as per August 2015 they are on GitHub at https://github.com/OpenAS2/OpenAs2App). I than split the project into a common library part (this project)
@@ -18,6 +22,12 @@ Versions >= 2.0.0 are compatible with ph-commons >= 6.0.
 
 #News and noteworthy
 
+  * 2015-12-01 Version 2.2.5
+    * Added a validity check so that expired certificates can no longer be used to sign, verify and encrypt messages. Decrypt is still possible.
+    * Added the possibility to disable the autosave of the `PKCS12CertificateFactory` using the new boolean attribute `autosave`. This can now also easily be set in the client settings. (issue #17)
+    * Fixed potential endless loop when a retry count was specified at a partnership (issue #16) 
+  * 2015-11-11 Version 2.2.4
+    * Fixed a minor issue where details of a ProcessingException were not passed into the MDN text
   * 2015-10-22 Version 2.2.3
     * Improved API for handling MDN errors (as2-lib issue #11)  
     * The signature verification of messages sent without `Content-Transfer-Encoding` was fixed (as2-lib issue #12)
@@ -50,7 +60,7 @@ Add the following to your `pom.xml` to use this artifact:
 <dependency>
   <groupId>com.helger</groupId>
   <artifactId>as2-lib</artifactId>
-  <version>2.2.3</version>
+  <version>2.2.5</version>
 </dependency>
 ```
 
@@ -59,7 +69,7 @@ For the MongoDB partnership factory, add the following to your `pom.xml`:
 <dependency>
   <groupId>com.helger</groupId>
   <artifactId>as2-partnership-mongodb</artifactId>
-  <version>2.2.3</version>
+  <version>2.2.5</version>
 </dependency>
 ```
 
@@ -68,7 +78,7 @@ For the receive servlet, add the following to your `pom.xml`:
 <dependency>
   <groupId>com.helger</groupId>
   <artifactId>as2-servlet</artifactId>
-  <version>2.2.3</version>
+  <version>2.2.5</version>
 </dependency>
 ```
 

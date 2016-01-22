@@ -1,7 +1,7 @@
 /**
  * The FreeBSD Copyright
  * Copyright 1994-2008 The FreeBSD Project. All rights reserved.
- * Copyright (C) 2013-2015 Philip Helger philip[at]helger[dot]com
+ * Copyright (C) 2013-2016 Philip Helger philip[at]helger[dot]com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -234,6 +234,19 @@ public class XMLPartnershipFactory extends AbstractPartnershipFactoryWithPartner
     return aPartnership;
   }
 
+  @Nonnull
+  private File _getUniqueBackupFile (final String sFilename)
+  {
+    long nIndex = 0;
+    File aBackupFile;
+    do
+    {
+      aBackupFile = new File (sFilename + '.' + StringHelper.getLeadingZero (nIndex, 7));
+      nIndex++;
+    } while (aBackupFile.exists ());
+    return aBackupFile;
+  }
+
   /**
    * Store the current status of the partnerships to a file.
    *
@@ -246,13 +259,7 @@ public class XMLPartnershipFactory extends AbstractPartnershipFactoryWithPartner
 
     if (!containsAttribute (ATTR_DISABLE_BACKUP))
     {
-      long nIndex = 0;
-      File aBackupFile;
-      do
-      {
-        aBackupFile = new File (sFilename + '.' + StringHelper.getLeadingZero (nIndex, 7));
-        nIndex++;
-      } while (aBackupFile.exists ());
+      final File aBackupFile = _getUniqueBackupFile (sFilename);
 
       s_aLogger.info ("backing up " + sFilename + " to " + aBackupFile.getName ());
 
