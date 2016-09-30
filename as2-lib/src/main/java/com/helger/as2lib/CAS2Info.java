@@ -43,7 +43,7 @@ import javax.annotation.concurrent.Immutable;
 public final class CAS2Info
 {
   /** The name of this AS2 client. May not contain blanks. */
-  public static final String NAME = "ph-OpenAS2";
+  public static final String NAME = "babelway-OpenAS2";
 
   /** The version of this AS2 client. May not contain blanks. */
   public static final String VERSION = "v2.2.4-SNAPSHOT";

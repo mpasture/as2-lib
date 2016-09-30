@@ -32,6 +32,8 @@
  */
 package com.helger.as2lib.processor.receiver.net;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
@@ -77,6 +79,7 @@ import com.helger.as2lib.util.http.HTTPHelper;
 import com.helger.as2lib.util.http.IAS2HttpResponseHandler;
 import com.helger.as2lib.util.javamail.ByteArrayDataSource;
 import com.helger.commons.ValueEnforcer;
+import com.helger.commons.io.file.FileHelper;
 import com.helger.commons.io.stream.NonBlockingByteArrayOutputStream;
 import com.helger.commons.io.stream.StreamHelper;
 import com.helger.commons.lang.StackTraceHelper;
@@ -337,6 +340,16 @@ public class AS2ReceiverHandler extends AbstractReceiverHandler
     {
       final IAS2Session aSession = m_aReceiverModule.getSession ();
 
+			try {
+				if (s_aLogger.isTraceEnabled()) {
+					File aFile = new File("/mnt/tomcat-7/ws-3/external-apps/store/peppol-inbox/as2-received-data", Long.toString(System.currentTimeMillis()) + ".rawhttp");
+					s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
+					IOHelper.copy(new ByteArrayInputStream(aMsgData), StreamHelper.getBuffered(FileHelper.getOutputStream(aFile)));
+				}
+			} catch (Exception e) {
+				s_aLogger.error("Unable to write input file", e);
+			}
+      
       try
       {
         // Put received data in a MIME body part

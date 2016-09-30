@@ -32,6 +32,7 @@
  */
 package com.helger.as2lib.processor.sender;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,7 +76,6 @@ import com.helger.as2lib.session.ComponentNotFoundException;
 import com.helger.as2lib.util.AS2Helper;
 import com.helger.as2lib.util.CAS2Header;
 import com.helger.as2lib.util.DateHelper;
-import com.helger.as2lib.util.EContentTransferEncoding;
 import com.helger.as2lib.util.IOHelper;
 import com.helger.as2lib.util.http.AS2HttpHeaderWrapperHttpURLConnection;
 import com.helger.as2lib.util.http.HTTPHelper;
@@ -87,10 +87,16 @@ import com.helger.commons.io.file.FileHelper;
 import com.helger.commons.io.file.FilenameHelper;
 import com.helger.commons.io.stream.NonBlockingByteArrayOutputStream;
 import com.helger.commons.io.stream.StreamHelper;
+import com.helger.commons.io.stream.WrappedOutputStream;
 import com.helger.commons.state.ETriState;
 import com.helger.commons.string.StringParser;
 import com.helger.commons.timing.StopWatch;
-
+import com.helger.as2lib.util.EContentTransferEncoding;
+/**
+ * AS2 sender module to send AS2 messages out.
+ *
+ * @author Philip Helger
+ */
 public class AS2SenderModule extends AbstractHttpSenderModule
 {
   private static final String ATTR_PENDINGMDNINFO = "pendingmdninfo";
@@ -345,7 +351,7 @@ public class AS2SenderModule extends AbstractHttpSenderModule
         // Use global value
         bIncludeCertificateInSignedContent = getSession ().isCryptoSignIncludeCertificateInBodyPart ();
       }
-
+      
       // Main signing
       aDataBP = AS2Helper.getCryptoHelper ()
                          .sign (aDataBP, aSenderCert, aSenderKey, eSignAlgorithm, bIncludeCertificateInSignedContent);
@@ -534,7 +540,7 @@ public class AS2SenderModule extends AbstractHttpSenderModule
       final String sReturnMIC = aMsg.getMDN ().getAttribute (AS2MessageMDN.MDNA_MIC);
 
       // Catch ReturnMIC == null in case the attribute is simply missing
-      if (sReturnMIC == null || !sReturnMIC.replaceAll (" ", "").equals (sOriginalMIC.replaceAll (" ", "")))
+      if (sReturnMIC == null || !sReturnMIC.replaceAll ("\\s+", "").equals (sOriginalMIC.replaceAll ("\\s+", "")))
       {
         // file was sent completely but the returned mic was not matched,
         // don't know it needs or needs not to be resent ? it's depended on
@@ -592,7 +598,7 @@ public class AS2SenderModule extends AbstractHttpSenderModule
   }
 
   private void _sendViaHTTP (@Nonnull final AS2Message aMsg,
-                             @Nonnull final MimeBodyPart aSecuredData,
+                             @Nonnull final MimeBodyPart aSecuredMimePart,
                              @Nonnull final String sMIC) throws OpenAS2Exception, IOException, MessagingException
   {
     final Partnership aPartnership = aMsg.getPartnership ();
@@ -611,19 +617,41 @@ public class AS2SenderModule extends AbstractHttpSenderModule
                                                    getSession ().getHttpProxy ());
     try
     {
+      s_aLogger.info ("Connecting to " + sUrl + aMsg.getLoggingText ());
+
       updateHttpHeaders (new AS2HttpHeaderWrapperHttpURLConnection (aConn), aMsg);
 
       aMsg.setAttribute (CNetAttribute.MA_DESTINATION_IP, aConn.getURL ().getHost ());
       aMsg.setAttribute (CNetAttribute.MA_DESTINATION_PORT, Integer.toString (aConn.getURL ().getPort ()));
 
-      s_aLogger.info ("Connecting to " + sUrl + aMsg.getLoggingText ());
-
       // Note: closing this stream causes connection abort errors on some AS2
       // servers
-      final OutputStream aMsgOS = aConn.getOutputStream ();
+      OutputStream aMsgOS = aConn.getOutputStream ();
+
+      // This stream dumps the HTTP
+      OutputStream aDebugOS = null;
+      if (s_aLogger.isTraceEnabled())
+      {
+        File aFile = new File ("/mnt/tomcat-7/ws-3/external-apps/store/peppol-outbox/as2-sent-data", Long.toString (System.currentTimeMillis ()) + ".rawhttp");
+        s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
+		aDebugOS = StreamHelper.getBuffered (FileHelper.getOutputStream (aFile));
+
+        // Overwrite the used OutputStream to additionally log to the debug
+        // OutputStream
+        final OutputStream aFinalDebugOS = aDebugOS;
+        aMsgOS = new WrappedOutputStream (aMsgOS)
+        {
+          @Override
+          public final void write (final int b) throws IOException
+          {
+            super.write (b);
+            aFinalDebugOS.write (b);
+          }
+        };
+      }
 
       // Transfer the data
-      final InputStream aMsgIS = aSecuredData.getInputStream ();
+      final InputStream aMsgIS = aSecuredMimePart.getInputStream ();
 
       final StopWatch aSW = StopWatch.createdStarted ();
       // Main transmission - closes InputStream
@@ -631,13 +659,17 @@ public class AS2SenderModule extends AbstractHttpSenderModule
       aSW.stop ();
       s_aLogger.info ("transferred " + IOHelper.getTransferRate (nBytes, aSW) + aMsg.getLoggingText ());
 
+      // Close debug OS (if used)
+      StreamHelper.close (aDebugOS);
+
       // Check the HTTP Response code
       final int nResponseCode = aConn.getResponseCode ();
+      // Accept most of 2xx HTTP response codes
       if (nResponseCode != HttpURLConnection.HTTP_OK &&
           nResponseCode != HttpURLConnection.HTTP_CREATED &&
           nResponseCode != HttpURLConnection.HTTP_ACCEPTED &&
-          nResponseCode != HttpURLConnection.HTTP_PARTIAL &&
-          nResponseCode != HttpURLConnection.HTTP_NO_CONTENT)
+          nResponseCode != HttpURLConnection.HTTP_NO_CONTENT &&
+          nResponseCode != HttpURLConnection.HTTP_PARTIAL)
       {
         s_aLogger.error ("Error URL '" + sUrl + "' - HTTP " + nResponseCode + " " + aConn.getResponseMessage ());
         throw new HttpResponseException (sUrl, nResponseCode, aConn.getResponseMessage ());

@@ -32,14 +32,10 @@
  */
 package com.helger.as2lib.crypto;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.cms.CMSAlgorithm;
 
-import com.helger.commons.annotation.Nonempty;
 import com.helger.commons.lang.EnumHelper;
 
 /**
@@ -57,40 +53,40 @@ public enum ECryptoAlgorithmCrypt implements ICryptoAlgorithm
   private final String m_sID;
   private final ASN1ObjectIdentifier m_aOID;
 
-  private ECryptoAlgorithmCrypt (@Nonnull @Nonempty final String sID, @Nonnull final ASN1ObjectIdentifier aOID)
+  private ECryptoAlgorithmCrypt (  final String sID,  final ASN1ObjectIdentifier aOID)
   {
     m_sID = sID;
     m_aOID = aOID;
   }
 
-  @Nonnull
-  @Nonempty
+  
+  
   public String getID ()
   {
     return m_sID;
   }
 
-  @Nonnull
+  
   public ASN1ObjectIdentifier getOID ()
   {
     return m_aOID;
   }
 
-  @Nullable
-  public static ECryptoAlgorithmCrypt getFromIDOrNull (@Nullable final String sID)
+  
+  public static ECryptoAlgorithmCrypt getFromIDOrNull ( final String sID)
   {
     return EnumHelper.getFromIDOrNull (ECryptoAlgorithmCrypt.class, sID);
   }
 
-  @Nonnull
-  public static ECryptoAlgorithmCrypt getFromIDOrThrow (@Nullable final String sID)
+  
+  public static ECryptoAlgorithmCrypt getFromIDOrThrow ( final String sID)
   {
     return EnumHelper.getFromIDOrThrow (ECryptoAlgorithmCrypt.class, sID);
   }
 
-  @Nullable
-  public static ECryptoAlgorithmCrypt getFromIDOrDefault (@Nullable final String sID,
-                                                          @Nullable final ECryptoAlgorithmCrypt eDefault)
+  
+  public static ECryptoAlgorithmCrypt getFromIDOrDefault ( final String sID,
+                                                           final ECryptoAlgorithmCrypt eDefault)
   {
     return EnumHelper.getFromIDOrDefault (ECryptoAlgorithmCrypt.class, sID, eDefault);
   }

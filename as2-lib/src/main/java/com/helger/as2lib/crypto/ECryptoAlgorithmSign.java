@@ -32,60 +32,85 @@
  */
 package com.helger.as2lib.crypto;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 
-import com.helger.commons.annotation.DevelopersNote;
-import com.helger.commons.annotation.Nonempty;
 import com.helger.commons.lang.EnumHelper;
 
 /**
  * This enum contains all signing supported crypto algorithms. The algorithms
  * contained in here may not be used for encryption of anything. See
- * {@link ECryptoAlgorithmCrypt} for encryption algorithms.
+ * {@link ECryptoAlgorithmCrypt} for encryption algorithms.<br>
+ * Note: Mendelson uses the RFC 5751 identifiers.
  *
  * @author Philip Helger
  */
 public enum ECryptoAlgorithmSign implements ICryptoAlgorithm
 {
- DIGEST_MD5 ("md5", PKCSObjectIdentifiers.md5, "MD5WITHRSA"),
- DIGEST_SHA1 ("sha1", OIWObjectIdentifiers.idSHA1, "SHA1WITHRSA"),
- @Deprecated @DevelopersNote ("Use DIGEST_SHA_256 instead") DIGEST_SHA256("sha256", NISTObjectIdentifiers.id_sha256, "SHA256WITHRSA"),
- @Deprecated @DevelopersNote ("Use DIGEST_SHA_384 instead") DIGEST_SHA384("sha384", NISTObjectIdentifiers.id_sha384, "SHA384WITHRSA"),
- @Deprecated @DevelopersNote ("Use DIGEST_SHA_512 instead") DIGEST_SHA512("sha512", NISTObjectIdentifiers.id_sha512, "SHA512WITHRSA"),
- /*
-  * Identifiers as used in Mendelson.
-  */
- DIGEST_SHA_256 ("sha-256", NISTObjectIdentifiers.id_sha256, "SHA256WITHRSA"),
- DIGEST_SHA_384 ("sha-384", NISTObjectIdentifiers.id_sha384, "SHA384WITHRSA"),
- DIGEST_SHA_512 ("sha-512", NISTObjectIdentifiers.id_sha512, "SHA512WITHRSA");
+  /** Same for RFC 3851 and RFC 5751 */
+  DIGEST_MD5 ("md5", PKCSObjectIdentifiers.md5, "MD5WITHRSA"),
+  /**
+   * Old version as of RFC 3851.
+   * @DevelopersNote ("Use DIGEST_SHA_1 instead")
+   */
+  @Deprecated DIGEST_SHA1("sha1", OIWObjectIdentifiers.idSHA1, "SHA1WITHRSA"),
+  /**
+   * Old version as of RFC 3851.
+   * @DevelopersNote ("Use DIGEST_SHA_256 instead")
+   */
+  @Deprecated  DIGEST_SHA256("sha256", NISTObjectIdentifiers.id_sha256, "SHA256WITHRSA"),
+  /**
+   * Old version as of RFC 3851.
+   * @DevelopersNote ("Use DIGEST_SHA_384 instead")
+   */
+  @Deprecated  DIGEST_SHA384("sha384", NISTObjectIdentifiers.id_sha384, "SHA384WITHRSA"),
+  /**
+   * Old version as of RFC 3851.
+   * @DevelopersNote ("Use DIGEST_SHA_512 instead")
+   */
+  @Deprecated  DIGEST_SHA512("sha512", NISTObjectIdentifiers.id_sha512, "SHA512WITHRSA"),
+  /**
+   * New version as of RFC 5751.
+   */
+  DIGEST_SHA_1 ("sha-1", OIWObjectIdentifiers.idSHA1, "SHA1WITHRSA"),
+  /**
+   * New version as of RFC 5751.
+   */
+  DIGEST_SHA_224 ("sha-224", NISTObjectIdentifiers.id_sha224, "SHA224WITHRSA"),
+  /**
+   * New version as of RFC 5751.
+   */
+  DIGEST_SHA_256 ("sha-256", NISTObjectIdentifiers.id_sha256, "SHA256WITHRSA"),
+  /**
+   * New version as of RFC 5751.
+   */
+  DIGEST_SHA_384 ("sha-384", NISTObjectIdentifiers.id_sha384, "SHA384WITHRSA"),
+  /**
+   * New version as of RFC 5751.
+   */
+  DIGEST_SHA_512 ("sha-512", NISTObjectIdentifiers.id_sha512, "SHA512WITHRSA");
 
   private final String m_sID;
   private final ASN1ObjectIdentifier m_aOID;
   private final String m_sBCAlgorithmName;
 
-  private ECryptoAlgorithmSign (@Nonnull @Nonempty final String sID,
-                                @Nonnull final ASN1ObjectIdentifier aOID,
-                                @Nonnull @Nonempty final String sBCAlgorithmName)
+  private ECryptoAlgorithmSign (final String sID,
+                                final ASN1ObjectIdentifier aOID,
+                                final String sBCAlgorithmName)
   {
     m_sID = sID;
     m_aOID = aOID;
     m_sBCAlgorithmName = sBCAlgorithmName;
   }
 
-  @Nonnull
-  @Nonempty
   public String getID ()
   {
     return m_sID;
   }
 
-  @Nonnull
+  
   public ASN1ObjectIdentifier getOID ()
   {
     return m_aOID;
@@ -95,28 +120,28 @@ public enum ECryptoAlgorithmSign implements ICryptoAlgorithm
    * @return The algorithm name to be used for BouncyCastle to do the SMIME
    *         packaging.
    */
-  @Nonnull
-  @Nonempty
+
+  
   public String getSignAlgorithmName ()
   {
     return m_sBCAlgorithmName;
   }
 
-  @Nullable
-  public static ECryptoAlgorithmSign getFromIDOrNull (@Nullable final String sID)
+  
+  public static ECryptoAlgorithmSign getFromIDOrNull ( final String sID)
   {
     return EnumHelper.getFromIDOrNull (ECryptoAlgorithmSign.class, sID);
   }
 
-  @Nonnull
-  public static ECryptoAlgorithmSign getFromIDOrThrow (@Nullable final String sID)
+  
+  public static ECryptoAlgorithmSign getFromIDOrThrow ( final String sID)
   {
     return EnumHelper.getFromIDOrThrow (ECryptoAlgorithmSign.class, sID);
   }
 
-  @Nullable
-  public static ECryptoAlgorithmSign getFromIDOrDefault (@Nullable final String sID,
-                                                         @Nullable final ECryptoAlgorithmSign eDefault)
+  
+  public static ECryptoAlgorithmSign getFromIDOrDefault ( final String sID,
+                                                          final ECryptoAlgorithmSign eDefault)
   {
     return EnumHelper.getFromIDOrDefault (ECryptoAlgorithmSign.class, sID, eDefault);
   }
