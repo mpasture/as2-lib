@@ -340,15 +340,18 @@ public class AS2ReceiverHandler extends AbstractReceiverHandler
     {
       final IAS2Session aSession = m_aReceiverModule.getSession ();
 
-			try {
-				if (s_aLogger.isTraceEnabled()) {
-					File aFile = new File("/mnt/tomcat-7/ws-3/external-apps/store/peppol-inbox/as2-received-data", Long.toString(System.currentTimeMillis()) + ".rawhttp");
-					s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
-					IOHelper.copy(new ByteArrayInputStream(aMsgData), StreamHelper.getBuffered(FileHelper.getOutputStream(aFile)));
-				}
-			} catch (Exception e) {
-				s_aLogger.error("Unable to write input file", e);
+      //Added by MPA
+      try {
+			String rawdir = getReceiverModule().getAttributeAsString("rawdir");
+			if (rawdir != null && s_aLogger.isTraceEnabled()) {
+				File aFile = new File(rawdir, Long.toString(System.currentTimeMillis()) + ".rawhttp");
+				s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
+				IOHelper.copy(new ByteArrayInputStream(aMsgData), StreamHelper.getBuffered(FileHelper.getOutputStream(aFile)));
 			}
+		} catch (Exception e) {
+			s_aLogger.error("Unable to write input file", e);
+		}
+      //End
       
       try
       {

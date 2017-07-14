@@ -76,6 +76,7 @@ import com.helger.as2lib.session.ComponentNotFoundException;
 import com.helger.as2lib.util.AS2Helper;
 import com.helger.as2lib.util.CAS2Header;
 import com.helger.as2lib.util.DateHelper;
+import com.helger.as2lib.util.EContentTransferEncoding;
 import com.helger.as2lib.util.IOHelper;
 import com.helger.as2lib.util.http.AS2HttpHeaderWrapperHttpURLConnection;
 import com.helger.as2lib.util.http.HTTPHelper;
@@ -91,7 +92,6 @@ import com.helger.commons.io.stream.WrappedOutputStream;
 import com.helger.commons.state.ETriState;
 import com.helger.commons.string.StringParser;
 import com.helger.commons.timing.StopWatch;
-import com.helger.as2lib.util.EContentTransferEncoding;
 /**
  * AS2 sender module to send AS2 messages out.
  *
@@ -627,28 +627,30 @@ public class AS2SenderModule extends AbstractHttpSenderModule
       // Note: closing this stream causes connection abort errors on some AS2
       // servers
       OutputStream aMsgOS = aConn.getOutputStream ();
-
-      // This stream dumps the HTTP
+    	  
       OutputStream aDebugOS = null;
-      if (s_aLogger.isTraceEnabled())
-      {
-        File aFile = new File ("/mnt/tomcat-7/ws-3/external-apps/store/peppol-outbox/as2-sent-data", Long.toString (System.currentTimeMillis ()) + ".rawhttp");
-        s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
-		aDebugOS = StreamHelper.getBuffered (FileHelper.getOutputStream (aFile));
+		//Added by MPA
+		try {
+			String rawdir = getAttributeAsString("rawdir");
+			if (rawdir != null && s_aLogger.isTraceEnabled()) {
+				File aFile = new File(rawdir, Long.toString(System.currentTimeMillis()) + ".rawhttp");
+				s_aLogger.trace("writing http trace to " + aFile.getAbsolutePath());
+				// This stream dumps the HTTP
+				aDebugOS = StreamHelper.getBuffered(FileHelper.getOutputStream(aFile));
+				final OutputStream aFinalDebugOS = aDebugOS;
+				aMsgOS = new WrappedOutputStream(aMsgOS) {
+					@Override
+					public final void write(final int b) throws IOException {
+						super.write(b);
+						aFinalDebugOS.write(b);
+					}
+				};
+			}
+		} catch (Exception e) {
+			s_aLogger.error("Unable to write output file", e);
+		}
+		//End
 
-        // Overwrite the used OutputStream to additionally log to the debug
-        // OutputStream
-        final OutputStream aFinalDebugOS = aDebugOS;
-        aMsgOS = new WrappedOutputStream (aMsgOS)
-        {
-          @Override
-          public final void write (final int b) throws IOException
-          {
-            super.write (b);
-            aFinalDebugOS.write (b);
-          }
-        };
-      }
 
       // Transfer the data
       final InputStream aMsgIS = aSecuredMimePart.getInputStream ();

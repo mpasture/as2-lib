@@ -268,6 +268,12 @@ public class AS2Client
   public AS2ClientResponse sendSynchronous (@Nonnull final AS2ClientSettings aSettings,
                                             @Nonnull final AS2ClientRequest aRequest)
   {
+	  return sendSynchronous(aSettings, aRequest, new StringMap());
+  }
+  @Nonnull
+  protected AS2ClientResponse sendSynchronous (@Nonnull final AS2ClientSettings aSettings,
+                                            @Nonnull final AS2ClientRequest aRequest, StringMap aSenderParameters)
+  {	  
     final AS2ClientResponse aResponse = createResponse ();
     IMessage aMsg = null;
     try
@@ -312,7 +318,7 @@ public class AS2Client
         // The message processor registration is required for the resending
         // feature
         final AS2SenderModule aSender = new AS2SenderModule ();
-        aSender.initDynamicComponent (aSession, null);
+        aSender.initDynamicComponent (aSession, aSenderParameters);
         aSession.getMessageProcessor ().addModule (aSender);
 
         aSender.handle (IProcessorSenderModule.DO_SEND, aMsg, aHandleOptions);
