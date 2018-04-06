@@ -86,7 +86,7 @@ public abstract class AbstractHttpSenderModule extends AbstractSenderModule
         final HttpsURLConnection aConns = (HttpsURLConnection) aConn;
 
         // Trust all server certificates
-        final SSLContext aSSLCtx = SSLContext.getInstance ("TLS");
+        final SSLContext aSSLCtx = SSLContext.getInstance ("TLSv1.2");
         SecureRandom aSecureRandom = null;
         if (AS2GlobalSettings.isUseSecureRandom ())
           aSecureRandom = VerySecureRandom.getInstance ();
